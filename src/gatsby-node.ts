@@ -175,7 +175,12 @@ export const sourceNodes = async (context: GatsbyContext, pluginConfig: PluginCo
 
   if (watchMode) {
     reporter.info('[sanity] Watch mode enabled, starting a listener')
-    client
+    const listenSubscriptionKey = getCacheKey(pluginConfig, CACHE_KEYS.LISTEN_SUBSCRIPTION)
+    const subscription = stateCache[listenSubscriptionKey]
+    if (subscription) {
+      subscription.unsubscribe();
+    }
+    stateCache[listenSubscriptionKey] = client
       .listen('*')
       .pipe(
         filter<ListenerMessage>(event => overlayDrafts || !event.documentId.startsWith('drafts.')),
